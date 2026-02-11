@@ -1,0 +1,135 @@
+================================================================================
+                    TABLA USERS - REFERENCIA RÁPIDA
+================================================================================
+
+INSTALACIÓN RÁPIDA:
+================================================================================
+
+1. Ejecutar script:
+   mysql -h localhost -u creditivoo_ordersuser -pC4ed1t1voo creditivoo_ivooApp < scripts/users-table.sql
+
+2. Verificar:
+   mysql -h localhost -u creditivoo_ordersuser -pC4ed1t1voo creditivoo_ivooApp -e "DESCRIBE users;"
+
+3. Ver usuarios:
+   mysql -h localhost -u creditivoo_ordersuser -pC4ed1t1voo creditivoo_ivooApp -e "SELECT id, email, full_name, role FROM users;"
+
+================================================================================
+ESTRUCTURA DE LA TABLA
+================================================================================
+
+Tabla: users
+
+Campos:
+  id              INT         PK, AUTO_INCREMENT     ID único
+  email           VARCHAR(255) UNIQUE, NOT NULL     Email para login
+  password_hash   VARCHAR(255) NOT NULL             Hash bcrypt
+  full_name       VARCHAR(255) NOT NULL             Nombre completo
+  role            VARCHAR(50) NOT NULL DEFAULT 'user' Rol (admin, user, manager)
+  phone           VARCHAR(20) NULL                  Teléfono (opcional)
+  is_active       BOOLEAN     DEFAULT TRUE          Activo/Inactivo
+  created_at      TIMESTAMP   DEFAULT NOW()         Fecha creación
+  updated_at      TIMESTAMP   DEFAULT NOW() ON UPDATE Fecha actualización
+  last_login      TIMESTAMP   NULL                  Último login
+
+Índices:
+  idx_email         - Para búsquedas rápidas por email
+  idx_role          - Para búsquedas por rol
+  idx_is_active     - Para listar usuarios activos
+  idx_created_at    - Para ordenar por fecha
+
+================================================================================
+DATOS DE PRUEBA
+================================================================================
+
+Email:       admin@empresa.com
+Contraseña:  admin123
+Hash:        $2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/KFm
+Rol:         admin
+Activo:      Sí
+
+================================================================================
+QUERIES COMUNES
+================================================================================
+
+LOGIN DE USUARIO:
+  SELECT id, email, password_hash, full_name, role, is_active 
+  FROM users 
+  WHERE email = 'admin@empresa.com' AND is_active = TRUE;
+
+CREAR USUARIO:
+  INSERT INTO users (email, password_hash, full_name, role, phone) 
+  VALUES ('usuario@empresa.com', '$2b$10$...', 'Nombre', 'user', '+1234567890');
+
+ACTUALIZAR LOGIN:
+  UPDATE users SET last_login = NOW() WHERE id = 1;
+
+CAMBIAR CONTRASEÑA:
+  UPDATE users SET password_hash = '$2b$10$...' WHERE id = 1;
+
+DESACTIVAR USUARIO:
+  UPDATE users SET is_active = FALSE WHERE id = 2;
+
+REACTIVAR USUARIO:
+  UPDATE users SET is_active = TRUE WHERE id = 2;
+
+LISTAR USUARIOS ACTIVOS:
+  SELECT id, email, full_name, role, created_at 
+  FROM users 
+  WHERE is_active = TRUE 
+  ORDER BY created_at DESC;
+
+LISTAR ADMINISTRADORES:
+  SELECT id, email, full_name, last_login 
+  FROM users 
+  WHERE role = 'admin' AND is_active = TRUE;
+
+CONTAR USUARIOS:
+  SELECT COUNT(*) as total FROM users;
+
+USUARIOS SIN LOGIN:
+  SELECT id, email, full_name, created_at 
+  FROM users 
+  WHERE last_login IS NULL 
+  ORDER BY created_at DESC;
+
+================================================================================
+INFORMACIÓN IMPORTANTE
+================================================================================
+
+CONTRASEÑAS:
+  - NUNCA en texto plano
+  - SIEMPRE con bcrypt (cost 10 mínimo)
+  - SIEMPRE 60 caracteres (hash estándar)
+  - Comparar en aplicación, nunca en SQL
+
+EMAIL:
+  - UNIQUE para evitar duplicados
+  - Validar formato en aplicación
+  - No permitir cambios sin verificación
+
+is_active:
+  - TRUE (1): Usuario puede hacer login
+  - FALSE (0): Usuario suspendido
+  - Verificar en cada login
+
+AUDITORÍA:
+  - created_at: Nunca modificar
+  - updated_at: Automático
+  - last_login: Actualizar en cada login
+
+CHARSET:
+  - UTF-8 (utf8mb4) para caracteres especiales
+  - InnoDB como motor
+
+================================================================================
+PRÓXIMOS PASOS
+================================================================================
+
+1. ✓ Crear tabla
+2. ✓ Insertar usuario admin
+3. Probar login
+4. Crear nuevos usuarios desde UI
+5. Implementar gestión de usuarios
+
+================================================================================
